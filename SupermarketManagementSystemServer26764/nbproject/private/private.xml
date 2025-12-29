@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-private xmlns="http://www.netbeans.org/ns/project-private/1">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/E:/SupermarketManagementSystemRMI/SupermarketManagementSystemRMI_COMPLETE_FINAL/SupermarketManagementSystemServer26764/src/controller/Server.java</file>
+            <file>file:/E:/SupermarketManagementSystemRMI/SupermarketManagementSystemRMI_COMPLETE_FINAL/SupermarketManagementSystemServer26764/src/hibernate.cfg.xml</file>
+            <file>file:/E:/SupermarketManagementSystemRMI/SupermarketManagementSystemRMI_COMPLETE_FINAL/SupermarketManagementSystemServer26764/src/service/ReportService.java</file>
+            <file>file:/E:/SupermarketManagementSystemRMI/SupermarketManagementSystemRMI_COMPLETE_FINAL/SupermarketManagementSystemServer26764/src/util/EmailSender.java</file>
+            <file>file:/E:/SupermarketManagementSystemRMI/SupermarketManagementSystemRMI_COMPLETE_FINAL/SupermarketManagementSystemServer26764/src/util/ActiveMQConfig.java</file>
+            <file>file:/E:/SupermarketManagementSystemRMI/SupermarketManagementSystemRMI_COMPLETE_FINAL/SupermarketManagementSystemServer26764/src/service/implementation/AuthServiceImpl.java</file>
+            <file>file:/E:/SupermarketManagementSystemRMI/SupermarketManagementSystemRMI_COMPLETE_FINAL/SupermarketManagementSystemServer26764/src/util/OTPManager.java</file>
+            <file>file:/E:/SupermarketManagementSystemRMI/SupermarketManagementSystemRMI_COMPLETE_FINAL/SupermarketManagementSystemServer26764/src/dao/EmployeeDao.java</file>
+            <file>file:/E:/SupermarketManagementSystemRMI/SupermarketManagementSystemRMI_COMPLETE_FINAL/SupermarketManagementSystemServer26764/src/service/EmployeeService.java</file>
+            <file>file:/E:/SupermarketManagementSystemRMI/SupermarketManagementSystemRMI_COMPLETE_FINAL/SupermarketManagementSystemServer26764/src/service/implementation/EmployeeServiceImpl.java</file>
+            <file>file:/E:/SupermarketManagementSystemRMI/SupermarketManagementSystemRMI_COMPLETE_FINAL/SupermarketManagementSystemServer26764/src/model/TransactionType.java</file>
+            <file>file:/E:/SupermarketManagementSystemRMI/SupermarketManagementSystemRMI_COMPLETE_FINAL/SupermarketManagementSystemServer26764/src/dao/InventoryTransactionDao.java</file>
+        </group>
+    </open-files>
+</project-private>

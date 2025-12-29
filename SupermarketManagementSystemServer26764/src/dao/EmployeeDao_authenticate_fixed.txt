@@ -1,0 +1,137 @@
+PROBLEM: RMI Serialization Error During Login
+
+ROOT CAUSE:
+When Employee is fetched from database with EAGER relationships:
+- Employee has EmployeeProfile (@OneToOne)
+- Employee has Set<Sales> (@OneToMany)  
+- Employee has Set<InventoryTransaction> (@OneToMany)
+- Sales references Customer, Product, Employee (circular!)
+- InventoryTransaction references Product, Employee (circular!)
+
+During RMI call, Java tries to serialize Employee to send to client.
+The circular references and deep object graphs cause serialization to fail!
+
+THE FIX:
+
+Option 1: Detach and Initialize (SAFER - USE THIS)
+------------------------------------------------------
+public Employee authenticate(String username, String password) {
+    Session session = null;
+    try{
+        session = HibernateUtil.getSessionFactory().openSession();
+        Query query = session.createQuery("FROM Employee WHERE username = :username");
+        query.setParameter("username", username);
+        Employee employee = (Employee) query.uniqueResult();
+        
+        if (employee != null && PasswordUtil.verifyPassword(password, employee.getPasswordHash())) {
+            // Initialize collections while session is open
+            if (employee.getSales() != null) {
+                employee.getSales().size();
+            }
+            if (employee.getInventoryTransactions() != null) {
+                employee.getInventoryTransactions().size();
+            }
+            if (employee.getEmployeeProfile() != null) {
+                // Force load
+                employee.getEmployeeProfile().getProfileId();
+            }
+            
+            // Detach from session
+            session.evict(employee);
+            
+            System.out.println("Authentication successful: " + username);
+            return employee;
+        }
+        
+        System.out.println("Authentication failed: " + username);
+        return null;
+    } catch(Exception e){
+        System.err.println("Authentication error: " + username);
+        e.printStackTrace();
+        return null;
+    } finally {
+        if(session != null) session.close();
+    }
+}
+
+Option 2: Clear Collections Before Sending (BETTER)
+----------------------------------------------------
+public Employee authenticate(String username, String password) {
+    Session session = null;
+    try{
+        session = HibernateUtil.getSessionFactory().openSession();
+        Query query = session.createQuery("FROM Employee WHERE username = :username");
+        query.setParameter("username", username);
+        Employee employee = (Employee) query.uniqueResult();
+        
+        if (employee != null && PasswordUtil.verifyPassword(password, employee.getPasswordHash())) {
+            // CLEAR collections to prevent circular serialization
+            // We don't need sales/transactions for login anyway!
+            if (employee.getSales() != null) {
+                employee.getSales().clear();
+            }
+            if (employee.getInventoryTransactions() != null) {
+                employee.getInventoryTransactions().clear();
+            }
+            
+            // Keep profile for first-login check
+            // but detach to prevent lazy loading issues
+            session.evict(employee);
+            
+            System.out.println("Authentication successful: " + username);
+            return employee;
+        }
+        
+        System.out.println("Authentication failed: " + username);
+        return null;
+    } catch(Exception e){
+        System.err.println("Authentication error: " + username);
+        e.printStackTrace();
+        return null;
+    } finally {
+        if(session != null) session.close();
+    }
+}
+
+Option 3: Change Fetch Type to LAZY (BEST LONG-TERM)
+----------------------------------------------------
+In Employee.java model:
+
+@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+private Set<Sales> sales = new HashSet<>();
+
+@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+private Set<InventoryTransaction> inventoryTransactions = new HashSet<>();
+
+Then in authenticate:
+
+public Employee authenticate(String username, String password) {
+    Session session = null;
+    try{
+        session = HibernateUtil.getSessionFactory().openSession();
+        Query query = session.createQuery("FROM Employee WHERE username = :username");
+        query.setParameter("username", username);
+        Employee employee = (Employee) query.uniqueResult();
+        
+        if (employee != null && PasswordUtil.verifyPassword(password, employee.getPasswordHash())) {
+            // With LAZY fetch, collections won't be loaded
+            // So no circular reference during serialization
+            session.evict(employee);
+            
+            System.out.println("Authentication successful: " + username);
+            return employee;
+        }
+        
+        System.out.println("Authentication failed: " + username);
+        return null;
+    } catch(Exception e){
+        System.err.println("Authentication error: " + username);
+        e.printStackTrace();
+        return null;
+    } finally {
+        if(session != null) session.close();
+    }
+}
+
+RECOMMENDED: Use Option 2 (Clear Collections)
+This is the quickest fix that doesn't require model changes.

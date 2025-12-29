@@ -1,0 +1,44 @@
+BETTER FIX: Don't clear collections, create NEW empty collections
+
+Problem with clear():
+- clear() might still keep the PersistentSet wrapper
+- PersistentSet is a Hibernate proxy that needs the session
+- When session closes, PersistentSet can't serialize
+
+Better solution: Replace with new HashSet
+- New HashSet is plain Java collection
+- No Hibernate dependencies
+- Serializes perfectly over RMI
+
+CODE:
+public Employee authenticate(String username, String password) {
+    Session session = null;
+    try{
+        session = HibernateUtil.getSessionFactory().openSession();
+        Query query = session.createQuery("FROM Employee WHERE username = :username");
+        query.setParameter("username", username);
+        Employee employee = (Employee) query.uniqueResult();
+        
+        if (employee != null && PasswordUtil.verifyPassword(password, employee.getPasswordHash())) {
+            // FIX: Replace Hibernate collections with plain Java collections
+            // This prevents RMI serialization issues with PersistentSet
+            employee.setSales(new java.util.HashSet<>());
+            employee.setInventoryTransactions(new java.util.HashSet<>());
+            
+            // EmployeeProfile is fine - it's a single object, not a collection
+            // No need to modify it
+            
+            System.out.println("Authentication successful for user: " + username);
+            return employee;
+        }
+        
+        System.out.println("Authentication failed for user: " + username + " (invalid credentials)");
+        return null;
+    } catch(Exception e){
+        System.err.println("Authentication error for user: " + username);
+        e.printStackTrace();
+        return null;
+    } finally {
+        if(session != null) session.close();
+    }
+}
